@@ -146,7 +146,9 @@ class SelectorList(List[_SelectorType]):
 
         ``query`` is the same argument as the one in :meth:`Selector.css`
         """
-        pass
+        return self.selectorlist_cls(
+            selector.css(query)[0] for selector in self for _ in selector.css(query)
+        )
 
     def re(
         self, regex: Union[str, Pattern[str]], replace_entities: bool = True
@@ -159,7 +161,7 @@ class SelectorList(List[_SelectorType]):
         Passing ``replace_entities`` as ``False`` switches off these
         replacements.
         """
-        pass
+        return [result for selector in self for result in selector.re(regex, replace_entities)]
 
     def re_first(
         self,
@@ -485,14 +487,14 @@ class Selector:
         """Remove matched nodes from the parent element."""
         parent = self.root.getparent()
         if parent is None:
-            raise CannotRemoveElementWithoutRoot("Cannot remove top-level elements")
+            raise CannotRemoveElementWithoutRootError("Cannot remove top-level elements")
         parent.remove(self.root)
 
     def drop(self) -> None:
         """Drop matched nodes from the parent element."""
         parent = self.root.getparent()
         if parent is None:
-            raise CannotDropElementWithoutParent("Cannot drop top-level elements")
+            raise CannotDropElementWithoutParentError("Cannot drop top-level elements")
         parent.drop(self.root)
 
     @property
