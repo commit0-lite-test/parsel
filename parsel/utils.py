@@ -6,6 +6,11 @@ try:
 except ImportError:
 
     def w3lib_replace_entities(x: str) -> str:
+        """
+        Fallback function for replacing HTML entities.
+        This function is used when w3lib is not installed.
+        It simply returns the input string without any modifications.
+        """
         return x
 
 
