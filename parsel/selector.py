@@ -17,6 +17,7 @@ from typing import (
     TypedDict,
     TypeVar,
     Union,
+    Tuple,
 )
 import jmespath
 from lxml import etree, html
@@ -138,7 +139,10 @@ class SelectorList(List[_SelectorType]):
 
             selector.xpath('//a[href=$url]', url="http://www.example.com")
         """
-        pass
+        return self.__class__([
+            result for selector in self
+            for result in selector.xpath(xpath, namespaces=namespaces, **kwargs)
+        ])
 
     def css(self, query: str) -> "SelectorList[_SelectorType]":
         """Call the ``.css()`` method for each element in this list and return
@@ -189,7 +193,7 @@ class SelectorList(List[_SelectorType]):
         """Call the ``.get()`` method for each element is this list and return
         their results flattened, as a list of strings.
         """
-        pass
+        return [selector.get() for selector in self]
 
     extract = getall
 
