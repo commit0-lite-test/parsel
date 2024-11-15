@@ -161,7 +161,11 @@ class SelectorList(List[_SelectorType]):
         Passing ``replace_entities`` as ``False`` switches off these
         replacements.
         """
-        return [result for selector in self for result in selector.re(regex, replace_entities)]
+        return [
+            result
+            for selector in self
+            for result in selector.re(regex, replace_entities)
+        ]
 
     def re_first(
         self,
@@ -487,7 +491,9 @@ class Selector:
         """Remove matched nodes from the parent element."""
         parent = self.root.getparent()
         if parent is None:
-            raise CannotRemoveElementWithoutRootError("Cannot remove top-level elements")
+            raise CannotRemoveElementWithoutRootError(
+                "Cannot remove top-level elements"
+            )
         parent.remove(self.root)
 
     def drop(self) -> None:
@@ -517,52 +523,62 @@ class Selector:
     def __repr__(self) -> str:
         data = repr(shorten(str(self.get()), width=40))
         return f"<{type(self).__name__} query={self._expr!r} data={data}>"
+
+
 def _get_root_and_type_from_text(
     text: str, input_type: Optional[str], base_url: Optional[str], huge_tree: bool
 ) -> Tuple[Any, str]:
-    if input_type == 'html':
-        parser = html.HTMLParser(recover=True, encoding='utf8')
-        root = etree.fromstring(text.encode('utf8'), parser=parser, base_url=base_url)
-        return root, 'html'
-    elif input_type == 'xml':
-        parser = etree.XMLParser(recover=True, encoding='utf8', huge_tree=huge_tree)
-        root = etree.fromstring(text.encode('utf8'), parser=parser, base_url=base_url)
-        return root, 'xml'
+    if input_type == "html":
+        parser = html.HTMLParser(recover=True, encoding="utf8")
+        root = etree.fromstring(text.encode("utf8"), parser=parser, base_url=base_url)
+        return root, "html"
+    elif input_type == "xml":
+        parser = etree.XMLParser(recover=True, encoding="utf8", huge_tree=huge_tree)
+        root = etree.fromstring(text.encode("utf8"), parser=parser, base_url=base_url)
+        return root, "xml"
     else:
         try:
             root = jmespath.compile(text)
-            return root, 'json'
+            return root, "json"
         except:
-            parser = html.HTMLParser(recover=True, encoding='utf8')
-            root = etree.fromstring(text.encode('utf8'), parser=parser, base_url=base_url)
-            return root, 'html'
+            parser = html.HTMLParser(recover=True, encoding="utf8")
+            root = etree.fromstring(
+                text.encode("utf8"), parser=parser, base_url=base_url
+            )
+            return root, "html"
+
 
 def _get_root_and_type_from_bytes(
-    body: bytes, encoding: str, input_type: Optional[str], base_url: Optional[str], huge_tree: bool
+    body: bytes,
+    encoding: str,
+    input_type: Optional[str],
+    base_url: Optional[str],
+    huge_tree: bool,
 ) -> Tuple[Any, str]:
-    if input_type == 'html':
+    if input_type == "html":
         parser = html.HTMLParser(recover=True, encoding=encoding)
         root = etree.fromstring(body, parser=parser, base_url=base_url)
-        return root, 'html'
-    elif input_type == 'xml':
+        return root, "html"
+    elif input_type == "xml":
         parser = etree.XMLParser(recover=True, encoding=encoding, huge_tree=huge_tree)
         root = etree.fromstring(body, parser=parser, base_url=base_url)
-        return root, 'xml'
+        return root, "xml"
     else:
         try:
             root = jmespath.compile(body.decode(encoding))
-            return root, 'json'
+            return root, "json"
         except:
             parser = html.HTMLParser(recover=True, encoding=encoding)
             root = etree.fromstring(body, parser=parser, base_url=base_url)
-            return root, 'html'
+            return root, "html"
+
 
 def _get_root_type(root: Any, input_type: Optional[str]) -> str:
     if input_type is not None:
         return input_type
     elif isinstance(root, (etree._Element, etree._ElementTree)):
-        return 'xml'
+        return "xml"
     elif isinstance(root, jmespath.parser.ParsedResult):
-        return 'json'
+        return "json"
     else:
-        return 'html'
+        return "html"
