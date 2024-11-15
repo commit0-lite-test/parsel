@@ -35,7 +35,7 @@ class TranslatorProtocol(Protocol):
 
 
 class TranslatorMixin:
-    """This mixin adds support to CSS pseudo elements via dynamic dispatch.
+    """Mixin that adds support for CSS pseudo elements via dynamic dispatch.
 
     Currently supported pseudo-elements are ``::text`` and ``::attr(ATTR_NAME)``.
     """
@@ -43,7 +43,7 @@ class TranslatorMixin:
     def xpath_pseudo_element(
         self, xpath: OriginalXPathExpr, pseudo_element: PseudoElement
     ) -> OriginalXPathExpr:
-        """Dispatch method that transforms XPath to support pseudo-element"""
+        """Dispatch method that transforms XPath to support pseudo-element."""
         if isinstance(pseudo_element, FunctionalPseudoElement):
             if pseudo_element.name == "attr":
                 return self.xpath_attr_functional_pseudo_element(xpath, pseudo_element)
