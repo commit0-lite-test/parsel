@@ -119,7 +119,10 @@ class SelectorList(List[_SelectorType]):
 
             selector.jmespath('author.name', options=jmespath.Options(dict_cls=collections.OrderedDict))
         """
-        pass
+        return self.__class__([
+            result for selector in self
+            for result in selector.jmespath(query, **kwargs)
+        ])
 
     def xpath(
         self, xpath: str, namespaces: Optional[Mapping[str, str]] = None, **kwargs: Any
@@ -571,7 +574,7 @@ def _get_root_and_type_from_bytes(
         try:
             root = jmespath.compile(body.decode(encoding))
             return root, "json"
-        except:
+        except Exception:
             parser = html.HTMLParser(recover=True, encoding=encoding)
             root = etree.fromstring(body, parser=parser, base_url=base_url)
             return root, "html"
