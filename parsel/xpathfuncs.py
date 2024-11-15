@@ -1,8 +1,9 @@
 import re
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, Optional
 
 try:
     from lxml import etree
+
     LXML_AVAILABLE = True
 except ImportError:
     LXML_AVAILABLE = False
@@ -33,7 +34,7 @@ def set_xpathfunc(fname: str, func: Optional[Callable]) -> None:
     """
     if not LXML_AVAILABLE:
         raise ImportError("lxml is required to use set_xpathfunc")
-    
+
     ns = etree.FunctionNamespace(None)  # type: ignore
     if func is None:
         if fname in ns:
