@@ -34,13 +34,16 @@ def set_xpathfunc(fname: str, func: Optional[Callable]) -> None:
     """
     if not LXML_AVAILABLE:
         raise ImportError("lxml is required to use set_xpathfunc")
-
-    ns = etree.FunctionNamespace(None)  # type: ignore
-    if func is None:
-        if fname in ns:
-            del ns[fname]
+    
+    if etree is not None:
+        ns = etree.FunctionNamespace(None)
+        if func is None:
+            if fname in ns:
+                del ns[fname]
+        else:
+            ns[fname] = func
     else:
-        ns[fname] = func
+        raise ImportError("lxml is not available, cannot set XPath function")
 
 
 def has_class(context: Any, *classes: str) -> bool:
