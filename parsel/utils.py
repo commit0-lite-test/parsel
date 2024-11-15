@@ -4,6 +4,7 @@ from typing import Any, Iterable, Iterator, List, Match, Pattern, Union, cast
 try:
     from w3lib.html import replace_entities as w3lib_replace_entities
 except ImportError:
+
     def w3lib_replace_entities(x: str) -> str:
         return x
 
