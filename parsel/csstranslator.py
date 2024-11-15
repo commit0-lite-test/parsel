@@ -1,3 +1,7 @@
+# This module requires the 'cssselect' package to be installed.
+# If you encounter import errors, please install it using:
+# pip install cssselect
+
 from functools import lru_cache
 from typing import TYPE_CHECKING, Optional, Protocol
 from cssselect import GenericTranslator as OriginalGenericTranslator
