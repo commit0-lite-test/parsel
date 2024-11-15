@@ -1,7 +1,15 @@
 import re
 from typing import Any, Callable, Optional
-from lxml import etree
-from w3lib.html import HTML5_WHITESPACE
+
+try:
+    from lxml import etree
+except ImportError:
+    etree = None  # type: ignore
+
+try:
+    from w3lib.html import HTML5_WHITESPACE
+except ImportError:
+    HTML5_WHITESPACE = " \t\n\r\f\v"
 
 regex = f"[{HTML5_WHITESPACE}]+"
 replace_html5_whitespaces = re.compile(regex).sub
