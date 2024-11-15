@@ -256,7 +256,11 @@ class Selector:
 
             selector.jmespath('author.name', options=jmespath.Options(dict_cls=collections.OrderedDict))
         """
-        pass
+        result = jmespath.search(query, self.get(), **kwargs)
+        if isinstance(result, list):
+            return self.selectorlist_cls(Selector(root=item, type=self.type) for item in result)
+        else:
+            return self.selectorlist_cls([Selector(root=result, type=self.type)])
 
     def xpath(self: _SelectorType, query: str, namespaces: Optional[Mapping[str, str]]=None, **kwargs: Any) -> SelectorList[_SelectorType]:
         """
@@ -276,7 +280,25 @@ class Selector:
 
             selector.xpath('//a[href=$url]', url="http://www.example.com")
         """
-        pass
+        try:
+            xpathev = self.root.xpath
+        except AttributeError:
+            return self.selectorlist_cls([])
+
+        nsp = dict(self.namespaces)
+        if namespaces is not None:
+            nsp.update(namespaces)
+        try:
+            result = xpathev(query, namespaces=nsp, **kwargs)
+        except etree.XPathError as exc:
+            msg = f"XPath error: {exc} in {query}"
+            raise ValueError(msg)
+
+        if type(result) is not list:
+            result = [result]
+
+        return self.selectorlist_cls(self.__class__(root=x, type=self.type)
+                                     for x in result)
 
     def css(self: _SelectorType, query: str) -> SelectorList[_SelectorType]:
         """
@@ -289,7 +311,7 @@ class Selector:
 
         .. _cssselect: https://pypi.python.org/pypi/cssselect/
         """
-        pass
+        return self.xpath(css2xpath(query))
 
     def re(self, regex: Union[str, Pattern[str]], replace_entities: bool=True) -> List[str]:
         """
@@ -304,7 +326,7 @@ class Selector:
         Passing ``replace_entities`` as ``False`` switches off these
         replacements.
         """
-        pass
+        return extract_regex(regex, self.get(), replace_entities=replace_entities)
 
     def re_first(self, regex: Union[str, Pattern[str]], default: Optional[str]=None, replace_entities: bool=True) -> Optional[str]:
         """
@@ -317,7 +339,11 @@ class Selector:
         Passing ``replace_entities`` as ``False`` switches off these
         replacements.
         """
-        pass
+        matches = self.re(regex, replace_entities=replace_entities)
+        if matches:
+            return matches[0]
+        else:
+            return default
 
     def get(self) -> Any:
         """
@@ -326,14 +352,25 @@ class Selector:
         For HTML and XML, the result is always a string, and percent-encoded
         content is unquoted.
         """
-        pass
+        if self.type == 'json':
+            return self.root
+        try:
+            return etree.tostring(self.root, method=_ctgroup[self.type]['_tostring_method'],
+                                  encoding='unicode', with_tail=False)
+        except (AttributeError, TypeError):
+            if self.root is True:
+                return '1'
+            elif self.root is False:
+                return '0'
+            else:
+                return str(self.root)
     extract = get
 
     def getall(self) -> List[str]:
         """
         Serialize and return the matched node in a 1-element list of strings.
         """
-        pass
+        return [self.get()]
 
     def register_namespace(self, prefix: str, uri: str) -> None:
         """
@@ -341,31 +378,43 @@ class Selector:
         Without registering namespaces you can't select or extract data from
         non-standard namespaces. See :ref:`selector-examples-xml`.
         """
-        pass
+        self.namespaces[prefix] = uri
 
     def remove_namespaces(self) -> None:
         """
         Remove all namespaces, allowing to traverse the document using
         namespace-less xpaths. See :ref:`removing-namespaces`.
         """
-        pass
+        for el in self.root.iter('*'):
+            if el.tag.startswith('{'):
+                el.tag = el.tag.split('}', 1)[1]
+            for at in list(el.attrib):
+                if at.startswith('{'):
+                    new_at = at.split('}', 1)[1]
+                    el.attrib[new_at] = el.attrib.pop(at)
 
     def remove(self) -> None:
         """
         Remove matched nodes from the parent element.
         """
-        pass
+        parent = self.root.getparent()
+        if parent is None:
+            raise CannotRemoveElementWithoutRoot("Cannot remove top-level elements")
+        parent.remove(self.root)
 
     def drop(self) -> None:
         """
         Drop matched nodes from the parent element.
         """
-        pass
+        parent = self.root.getparent()
+        if parent is None:
+            raise CannotDropElementWithoutParent("Cannot drop top-level elements")
+        parent.drop(self.root)
 
     @property
     def attrib(self) -> Dict[str, str]:
         """Return the attributes dictionary for underlying element."""
-        pass
+        return dict(self.root.attrib)
 
     def __bool__(self) -> bool:
         """
