@@ -10,7 +10,6 @@ __all__ = [
     "Selector",
     "SelectorList",
     "css2xpath",
-    "xpathfuncs",
 ]
 
 from parsel import xpathfuncs  # NOQA

@@ -45,6 +45,10 @@ def set_xpathfunc(fname: str, func: Optional[Callable]) -> None:
     else:
         raise ImportError("lxml is not available, cannot set XPath function")
 
+def setup() -> None:
+    """Setup XPath functions."""
+    pass
+
 
 def has_class(context: Any, *classes: str) -> bool:
     """has-class function.
