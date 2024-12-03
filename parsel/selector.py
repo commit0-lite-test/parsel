@@ -45,6 +45,10 @@ class CannotDropElementWithoutParentError(CannotRemoveElementWithoutParentError)
     pass
 
 
+class CannotRemoveElementWithoutParent(Exception):
+    pass
+
+
 class SafeXMLParser(etree.XMLParser):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         kwargs.setdefault("resolve_entities", False)

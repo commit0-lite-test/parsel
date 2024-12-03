@@ -14,8 +14,8 @@ from parsel import Selector, SelectorList
 from parsel.selector import (
     _NOT_SET,
     LXML_SUPPORTS_HUGE_TREE,
-    CannotRemoveElementWithoutParent,
-    CannotRemoveElementWithoutRoot,
+    CannotRemoveElementWithoutParentError,
+    CannotRemoveElementWithoutRootError,
 )
 
 
