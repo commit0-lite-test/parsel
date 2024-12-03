@@ -4,6 +4,7 @@ packages.
 
 import typing
 import warnings
+import json
 from typing import (
     Any,
     Dict,
@@ -19,7 +20,6 @@ from typing import (
     Union,
     Tuple,
 )
-import jmespath
 from lxml import etree, html
 from packaging.version import Version
 from .csstranslator import GenericTranslator, HTMLTranslator, css2xpath
@@ -91,6 +91,7 @@ class SelectorList(List[_SelectorType]):
     """The :class:`SelectorList` class is a subclass of the builtin ``list``
     class, which provides a few additional methods.
     """
+    selectorlist_cls = None
 
     @typing.overload
     def __getitem__(self, pos: "SupportsIndex") -> _SelectorType:
@@ -285,6 +286,7 @@ class Selector:
         _expr: Optional[str] = None,
         huge_tree: bool = LXML_SUPPORTS_HUGE_TREE,
     ) -> None:
+        self.type = type
         self.root: Any
         if type not in ("html", "json", "text", "xml", None):
             raise ValueError(f"Invalid type: {type}")
@@ -512,7 +514,7 @@ class Selector:
         parent = self.root.getparent()
         if parent is None:
             raise CannotDropElementWithoutParentError("Cannot drop top-level elements")
-        parent.drop(self.root)
+        parent.remove(self.root)
 
     @property
     def attrib(self) -> Dict[str, str]:
@@ -547,11 +549,17 @@ def _get_root_and_type_from_text(
         parser = etree.XMLParser(recover=True, encoding="utf8", huge_tree=huge_tree)
         root = etree.fromstring(text.encode("utf8"), parser=parser, base_url=base_url)
         return root, "xml"
+    elif input_type == "json":
+        try:
+            root = json.loads(text)
+            return root, "json"
+        except json.JSONDecodeError:
+            raise ValueError("Invalid JSON")
     else:
         try:
-            root = jmespath.compile(text)
+            root = json.loads(text)
             return root, "json"
-        except:
+        except json.JSONDecodeError:
             parser = html.HTMLParser(recover=True, encoding="utf8")
             root = etree.fromstring(
                 text.encode("utf8"), parser=parser, base_url=base_url
